@@ -47,7 +47,7 @@ class xmlhacked():
         exit_ = 0
         if not url.startswith("http"):
             url = "http://%s" % url
-        requests.head(url, verify=False)
+    
         try:
             requests.head(url, verify=False)
         except:
