@@ -9,6 +9,7 @@
 ```bash
 git clone https://github.com/Artemis1029/Java_xmlhack.git
 cd Java_xmlhack
+pip install -r requirements.txt
 # if get
 python xmlsearch.py -u https://xxx.xxx/?file=../WEB-INF/web.xml -c="cookie"
 # if post
